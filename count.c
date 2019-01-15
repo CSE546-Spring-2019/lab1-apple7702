@@ -42,34 +42,42 @@ int main(int argc, char *argv[]){
 	int cellSize=strlen(pattern);   //get the length of pattern
 
 
-	int flag=1;  //to record if two string match
-	char compare[cellSize];
-	// printf ("%s\n", pattern);
 
-	// read same size as pattern every time until reach the end
-	while(fread(compare, sizeof(char), cellSize, inputFile)==cellSize){
-		// printf ("%s\n", compare);
+	//initiallize the size read every time
+	int readSize=10000;
+	int flag=1;
+	char compare[readSize]; //store stream to buffer
 
-		flag=1;
-		for (int i = 0; i < cellSize; ++i)
+	while((readSize=fread(compare,1,readSize,inputFile))>=cellSize){
+
+		for (int i = 0; i+cellSize<=readSize; ++i)
 		{
-			if (compare[i]!=pattern[i])
+			/* code */
+			if (compare[i]==pattern[0])
 			{
-				flag=0;
-				break;
+				flag=1;
+				for (int j = 0; j < cellSize; ++j)
+				{
+					if (compare[i+j]!=pattern[j])
+					{
+						flag=0;
+						break;
+					}
+				}
+
+				if(flag){
+					count++;
+				}
+				
 			}
 		}
+		fseek(inputFile,1-cellSize,SEEK_CUR);
 
-		if(flag){
-			count++;
-		}
-		
-		// set start to next char
-		fseek(inputFile,-(cellSize-1)*sizeof(char),SEEK_CUR);
 	}
 
+
 	fseek(inputFile, 0, SEEK_END);
-	size=ftell(inputFile);
+	size=(long)ftell(inputFile);
 
 	printf ("Size of file is %ld\n", size);
 	printf ("Number of matches = %d\n", count);
@@ -77,7 +85,7 @@ int main(int argc, char *argv[]){
 
 
 	// write to file
-	fseek(outputFile, 0, SEEK_SET);
+	// fseek(outputFile, 0, SEEK_SET);
 	fprintf(outputFile, "Size of file is %ld\n", size);
 	fprintf(outputFile, "Number of matches = %d\n", count);
 
